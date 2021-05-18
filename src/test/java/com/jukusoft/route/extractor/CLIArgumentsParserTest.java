@@ -15,6 +15,10 @@ public class CLIArgumentsParserTest {
         });
 
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            CLIArgumentsParser.parseArguments(new String[]{"-i"});
+        });
+
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
             CLIArgumentsParser.parseArguments(new String[]{"-i", "test"});
         });
     }
