@@ -97,6 +97,8 @@ public class SourceCodeParser {
                         }
 
                         if (!name.isEmpty()) {
+                            logger.debug("add entpoint url to list: {}", url);
+
                             Route route = new Route(url, name);
                             routes.add(route);
                         }
