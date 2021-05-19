@@ -1,5 +1,6 @@
 package com.jukusoft.route.extractor.openapi;
 
+import com.jukusoft.route.extractor.parser.Parameter;
 import com.jukusoft.route.extractor.parser.Route;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -73,7 +74,34 @@ public class OpenAPIGenerator {
                 JSONObject path = new JSONObject();
 
                 //TODO: add code here
-                path.put("test", "test");
+                path.put("description", route.getName());
+
+                JSONArray producesArr = new JSONArray();
+                producesArr.put(route.getProduces());
+                path.put("produces", producesArr);
+
+                if (!route.getParameters().isEmpty()) {
+                    JSONArray parametersArray = new JSONArray();
+
+                    for (Parameter param : route.getParameters()) {
+                        JSONObject param1 = new JSONObject();
+
+                        param1.put("name", param.getName());
+                        param1.put("in", param.getIn());
+                        param1.put("required", param.getRequired());
+                        param1.put("type", param.getType());
+                        param1.put("description", param.getName());
+                        param1.put("operationId", param.getName());
+
+                        if (!param.getDefaultStr().isEmpty()) {
+                            param1.put("default", param.getDefaultStr());
+                        }
+
+                        parametersArray.put(param1);
+                    }
+
+                    path.put("parameters", parametersArray);
+                }
 
                 methodJSON.put(route.getMethod().toString().toLowerCase(Locale.ROOT), path);
             }
