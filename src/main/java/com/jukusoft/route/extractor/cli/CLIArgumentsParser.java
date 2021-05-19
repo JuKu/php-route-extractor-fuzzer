@@ -37,6 +37,18 @@ public class CLIArgumentsParser {
         output.setRequired(true);
         options.addOption(output);
 
+        Option fileName = new Option("f", "filename", true, "output filename (optional)");
+        fileName.setRequired(false);
+        options.addOption(fileName);
+
+        Option host = new Option("h", "host", true, "host address, e.q. localhost:8888");
+        host.setRequired(false);
+        options.addOption(host);
+
+        Option basePath = new Option("b", "basePath", true, "base path, e.q. /api");
+        basePath.setRequired(false);
+        options.addOption(basePath);
+
         CommandLineParser parser = new DefaultParser();
         HelpFormatter formatter = new HelpFormatter();
         CommandLine cmd;

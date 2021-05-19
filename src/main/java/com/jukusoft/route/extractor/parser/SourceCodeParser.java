@@ -96,8 +96,10 @@ public class SourceCodeParser {
                             }
                         }
 
-                        Route route = new Route(url, name);
-                        routes.add(route);
+                        if (!name.isEmpty()) {
+                            Route route = new Route(url, name);
+                            routes.add(route);
+                        }
                     }
                 }
 
