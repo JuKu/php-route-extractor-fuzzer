@@ -12,6 +12,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -21,6 +23,7 @@ import java.util.stream.Stream;
 public class SourceCodeParser {
 
     private static final Logger logger = LoggerFactory.getLogger(SourceCodeParser.class);
+    private static final Pattern pattern = Pattern.compile("@Route((.*\\)))", Pattern.MULTILINE);//"(?:filter=\\*\\*)(.*?)(?:&)"
 
     /**
      * private constructor, because this class is a utility class
@@ -34,7 +37,7 @@ public class SourceCodeParser {
             throw new IllegalArgumentException("src directory does not exists or is not a directory: " + srcDir.getAbsolutePath());
         }
 
-        logger.info("parse source directory: {}", srcDir.getAbsolutePath());
+        logger.debug("parse source directory: {}", srcDir.getAbsolutePath());
 
         List<Route> routes = Files.walk(Paths.get(srcDir.toURI()))
                 .filter(Files::isRegularFile)
@@ -42,6 +45,8 @@ public class SourceCodeParser {
                 .map(file -> parseSourceCodeFile(file))
                 .flatMap(list -> list.stream())
                 .collect(Collectors.toList());
+
+        logger.info("{} routes found in source code directory", routes.size());
 
         return routes;
     }
@@ -52,7 +57,52 @@ public class SourceCodeParser {
         logger.info("parse file: {}", path.toFile().getAbsolutePath());
 
         try {
-            Files.readString(path, StandardCharsets.UTF_8);
+            String content = Files.readString(path, StandardCharsets.UTF_8);
+
+            //lite performance optimization
+            if (content.contains("@Route")) {
+                logger.debug("file contains @Route annotations: {}", path.toFile().getAbsolutePath());
+
+                final Matcher m = pattern.matcher(content);
+
+                int cnt = 0;
+                while (m.find()) {
+                    String line = m.group(0);
+                    //System.out.println(++cnt + ": G1: " + m.group(1));
+
+                    String innerBracesContent = m.group(1).replace("(", "").replace(")", "").replace("\"", "");
+                    //logger.info("content: {}", innerBracesContent);
+
+                    String[] params = innerBracesContent.split(", ");
+
+                    for (String param : params) {
+                        String[] array = param.split("=");
+
+                        String url = "";
+                        String name = "";
+
+                        if (array.length == 1) {
+                            //its the url
+                            logger.debug("endpoint url found: {}", array[0]);
+                            url = array[0];
+                        } else {
+                            String[] array1 = new String[array.length - 1];
+                            System.arraycopy(array, 1, array1, 0, array1.length);
+                            array[1] = String.join("=", array1);
+                            //logger.info("key-value found, key: {}, value: {}", array[0], array[1]);
+
+                            if (array[0].equals("name")) {
+                                name = array[1];
+                            }
+                        }
+
+                        Route route = new Route(url, name);
+                        routes.add(route);
+                    }
+                }
+
+                logger.debug("found {} occurrences of @Route annotations in this file", cnt);
+            }
         } catch (IOException e) {
             e.printStackTrace();
             System.err.println("ERROR - Cannot parse file: " + path.toFile().getAbsolutePath() + " because of exception: " + e.getLocalizedMessage());
