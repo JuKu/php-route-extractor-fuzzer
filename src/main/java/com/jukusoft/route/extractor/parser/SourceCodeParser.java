@@ -75,16 +75,16 @@ public class SourceCodeParser {
 
                     String[] params = innerBracesContent.split(", ");
 
+                    String url = "";
+                    String name = "";
+
                     for (String param : params) {
                         String[] array = param.split("=");
 
-                        String url = "";
-                        String name = "";
-
                         if (array.length == 1) {
                             //its the url
-                            logger.debug("endpoint url found: {}", array[0]);
                             url = array[0];
+                            logger.debug("endpoint url found: {}", url);
                         } else {
                             String[] array1 = new String[array.length - 1];
                             System.arraycopy(array, 1, array1, 0, array1.length);
@@ -95,13 +95,13 @@ public class SourceCodeParser {
                                 name = array[1];
                             }
                         }
+                    }
 
-                        if (!name.isEmpty()) {
-                            logger.debug("add entpoint url to list: {}", url);
+                    if (!name.isEmpty()) {
+                        logger.debug("add entpoint url to list: {}", url);
 
-                            Route route = new Route(url, name);
-                            routes.add(route);
-                        }
+                        Route route = new Route(url, name);
+                        routes.add(route);
                     }
                 }
 

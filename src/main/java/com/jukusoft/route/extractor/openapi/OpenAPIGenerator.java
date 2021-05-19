@@ -1,13 +1,14 @@
 package com.jukusoft.route.extractor.openapi;
 
 import com.jukusoft.route.extractor.parser.Route;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
+import java.util.*;
 
 /**
  * this class is responsible for generating OpenAPI specification files (swagger json)
@@ -42,7 +43,8 @@ public class OpenAPIGenerator {
         file.createNewFile();
 
         //generate OpenAPI spec
-        String content = generateJSON(routes, host, basePath).toString();
+        int spacesToIndentEachLevel = 2;
+        String content = generateJSON(routes, host, basePath).toString(spacesToIndentEachLevel);
 
         byte[] strToBytes = content.getBytes();
         Files.write(file.toPath(), strToBytes);
@@ -55,13 +57,47 @@ public class OpenAPIGenerator {
         json.put("basePath", basePath);
         json.put("host", host);
 
+        //produces
+        JSONArray producesArray = new JSONArray();
+        producesArray.put("application/xml");
+        json.put("produces", producesArray);
+
+        Map<String,List<Route>> pathMap = convertToPathMap(routes);
+
         JSONObject paths = new JSONObject();
 
-        //
+        for (Map.Entry<String,List<Route>> entry : pathMap.entrySet()) {
+            JSONObject methodJSON = new JSONObject();
+
+            for (Route route : entry.getValue()) {
+                JSONObject path = new JSONObject();
+
+                //TODO: add code here
+                path.put("test", "test");
+
+                methodJSON.put(route.getMethod().toString().toLowerCase(Locale.ROOT), path);
+            }
+
+            paths.put(entry.getKey(), methodJSON);
+        }
 
         json.put("paths", paths);
 
         return json;
+    }
+
+    private Map<String,List<Route>> convertToPathMap(List<Route> routes) {
+        Map<String,List<Route>> pathMap = new HashMap<>();
+
+        for (Route route : routes) {
+            if (!pathMap.containsKey(route.getUrl())) {
+                pathMap.put(route.getUrl(), new ArrayList<>());
+            }
+
+            pathMap.get(route.getUrl()).add(route);
+        }
+
+        return pathMap;
     }
 
 }
