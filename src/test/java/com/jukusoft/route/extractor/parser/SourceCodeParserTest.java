@@ -7,8 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SourceCodeParserTest {
 
@@ -30,6 +29,9 @@ public class SourceCodeParserTest {
         List<Route> routes = SourceCodeParser.parseSourceCodeFile(new File("../mole-web/src/TUD/INF/MoleWebBundle/Controller/CatalogController.php").toPath());
         Assertions.assertNotNull(routes);
         Assertions.assertFalse(routes.isEmpty());
+
+        //check, if the first route is specified correctly
+        assertTrue(routes.stream().anyMatch(route -> route.getUrl().contains("/catalogs/semester/{_locale}")));
 
         assertEquals(16, routes.size());
 

@@ -70,6 +70,9 @@ public class SourceCodeParser {
 
                 final Matcher m = pattern.matcher(content);
 
+                String baseUrl = "";
+                int counter = 0;
+
                 int cnt = 0;
                 while (m.find()) {
                     String line = m.group(0);
@@ -90,6 +93,11 @@ public class SourceCodeParser {
                             //its the url
                             url = array[0];
                             logger.debug("endpoint url found: {}", url);
+
+                            if (counter == 0) {
+                                //its the base url
+                                baseUrl = url;
+                            }
                         } else {
                             String[] array1 = new String[array.length - 1];
                             System.arraycopy(array, 1, array1, 0, array1.length);
@@ -102,12 +110,22 @@ public class SourceCodeParser {
                         }
                     }
 
-                    if (!name.isEmpty()) {
+                    if (!name.isEmpty() && !url.equals(baseUrl)) {
+                        //remove the first "/" before the url, because base url already contains this (else we get something like "//")
+                        if (baseUrl.endsWith("/") && url.startsWith("/")) {
+                            url = url.substring(1);
+                        }
+
+                        url = baseUrl + url;
                         logger.debug("add entpoint url to list: {}", url);
 
                         Route route = new Route(url, name);
                         routes.add(route);
+                    } else {
+                        logger.warn("endpoint without name: {}", url);
                     }
+
+                    counter++;
                 }
 
                 logger.debug("found {} occurrences of @Route annotations in this file", cnt);
