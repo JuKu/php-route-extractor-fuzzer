@@ -33,6 +33,13 @@ public class SourceCodeParserTest {
         //check, if the first route is specified correctly
         assertTrue(routes.stream().anyMatch(route -> route.getUrl().contains("/catalogs/semester/{_locale}")));
 
+        //check edge cases with multiline comments
+        assertTrue(routes.stream().anyMatch(route -> route.getUrl().contains("/catalogs/{_locale}")));
+        assertTrue(routes.stream().anyMatch(route -> route.getUrl().contains("/catalogs/index")));
+        assertTrue(routes.stream().anyMatch(route -> route.getUrl().contains("/catalogs/")));
+        assertTrue(routes.stream().anyMatch(route -> route.getUrl().contains("/catalogs/{shortname}/index/{schedule}/{_locale}")));
+
+        //verify, that all routes was found (without the base url)
         assertEquals(16, routes.size());
 
         //verify, that the first @Route annotation is not parsed ("/catalogs")
