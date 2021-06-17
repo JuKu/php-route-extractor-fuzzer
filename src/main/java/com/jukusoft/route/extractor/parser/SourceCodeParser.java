@@ -23,8 +23,12 @@ import java.util.stream.Stream;
  */
 public class SourceCodeParser {
 
+    //see also: https://stackoverflow.com/questions/18864509/how-to-java-regex-to-match-everything-but-specified-pattern
+    // ^ means "except" (in braces)
     private static final Logger logger = LoggerFactory.getLogger(SourceCodeParser.class);
-    private static final Pattern pattern = Pattern.compile("@Route((.*\\)))", Pattern.MULTILINE);//"(?:filter=\\*\\*)(.*?)(?:&)"
+    private static final Pattern pattern = Pattern.compile("@Route\\(([^\\)]*)\\)", Pattern.MULTILINE | Pattern.DOTALL);//"(?:filter=\\*\\*)(.*?)(?:&)"
+    //@Route\([^\)]*\), old: @Route((.*\))), https://www.freeformatter.com/java-regex-tester.html#ad-output
+    //3. version: @Route\(([^\)]*)\) - with braces it matches the content as group
 
     /**
      * private constructor, because this class is a utility class
@@ -77,6 +81,7 @@ public class SourceCodeParser {
                 while (m.find()) {
                     String line = m.group(0);
                     //System.out.println(++cnt + ": G1: " + m.group(1));
+                    System.err.println(line);
 
                     String innerBracesContent = m.group(1).replace("(", "").replace(")", "").replace("\"", "");
                     //logger.info("content: {}", innerBracesContent);
