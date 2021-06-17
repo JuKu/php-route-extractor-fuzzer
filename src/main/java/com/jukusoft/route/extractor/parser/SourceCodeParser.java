@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -33,6 +34,8 @@ public class SourceCodeParser {
     }
 
     public static List<Route> parseSourceCodeDir(File srcDir) throws IOException {
+        Objects.requireNonNull(srcDir);
+
         if (!srcDir.exists() || !srcDir.isDirectory()) {
             throw new IllegalArgumentException("src directory does not exists or is not a directory: " + srcDir.getAbsolutePath());
         }
@@ -52,6 +55,8 @@ public class SourceCodeParser {
     }
 
     public static List<Route> parseSourceCodeFile(Path path) {
+        Objects.requireNonNull(path);
+
         List<Route> routes = new ArrayList<>();
 
         logger.info("parse file: {}", path.toFile().getAbsolutePath());
