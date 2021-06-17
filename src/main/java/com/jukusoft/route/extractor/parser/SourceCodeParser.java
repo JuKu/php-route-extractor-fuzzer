@@ -81,7 +81,7 @@ public class SourceCodeParser {
                 while (m.find()) {
                     String line = m.group(0);
                     //System.out.println(++cnt + ": G1: " + m.group(1));
-                    System.err.println(line);
+                    //System.err.println(line);
 
                     String innerBracesContent = m.group(1).replace("(", "").replace(")", "").replace("\"", "");
                     //logger.info("content: {}", innerBracesContent);
