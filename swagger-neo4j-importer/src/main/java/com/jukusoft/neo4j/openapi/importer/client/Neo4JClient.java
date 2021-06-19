@@ -1,7 +1,10 @@
 package com.jukusoft.neo4j.openapi.importer.client;
 
 import org.neo4j.driver.*;
+import org.neo4j.driver.Record;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -37,6 +40,16 @@ public class Neo4JClient implements AutoCloseable {
      */
     public void createDatabase(String database) {
         this.writeTransaction(tx -> tx.run("CREATE DATABASE " + database));
+    }
+
+    /**
+     * delete a neo4j database - important: this only works in enterprise edition (!).
+     * This method doesn't do any escaping.
+     *
+     * @param database database name
+     */
+    public void dropDatabase(String database) {
+        this.writeTransaction(tx -> tx.run("DROP DATABASE " + database + " IF EXISTS"));
     }
 
     /**
@@ -89,6 +102,35 @@ public class Neo4JClient implements AutoCloseable {
         });
 
         return new Node(nodeID);
+    }
+
+    /**
+     * list all databases.
+     *
+     * @return list of databases
+     */
+    public List<Database> listDatabases() {
+        return this.readTransaction(tx -> {
+            List<Database> databases = new ArrayList<>();
+
+            Result result = tx.run("SHOW DATABASES");
+
+            for (Record row : result.list()) {
+                Database db = new Database(
+                        row.get("name").asString(),
+                        row.get("address").asString(),
+                        row.get("role").asString(),
+                        row.get("requestedStatus").asString(),
+                        row.get("currentStatus").asString(),
+                        row.get("terror").asString(),
+                        row.get("default").asBoolean(),
+                        row.get("home").asBoolean()
+                );
+                databases.add(db);
+            }
+
+            return databases;
+        });
     }
 
     /**
