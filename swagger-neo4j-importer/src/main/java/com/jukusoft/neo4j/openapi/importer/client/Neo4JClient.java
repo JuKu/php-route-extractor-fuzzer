@@ -97,11 +97,62 @@ public class Neo4JClient implements AutoCloseable {
      */
     public Node createNode(String type) {
         long nodeID = this.writeTransaction(tx -> {
-            Result result = tx.run("CREATE (n:" + type + ") RETURN ', from node ' + id(a)");
-            return result.single().get(0).asLong();
+            Result result = tx.run("CREATE (n:" + type + ") RETURN id(n)");
+            return result.single().get("id(n)").asLong();
         });
 
         return new Node(nodeID);
+    }
+
+    /**
+     * delete a specific node.
+     * @param node the persistent neo4j node
+     */
+    public void deleteNode(Node node) {
+        this.writeTransaction(tx -> {
+            Result result = tx.run("MATCH (n) where ID(n)=" + node.getNodeID() + "\n" +
+                    "OPTIONAL MATCH (n)-[r]-() //drops p's relations\n" +
+                    "DELETE r,n");
+            System.err.println(result.list().stream().count());
+            return null;
+        });
+    }
+
+    /**
+     * delete all nodes with this label.
+     * @param type node label
+     */
+    public void deleteNodes(String type) {
+        this.writeTransaction(tx -> {
+            Result result = tx.run("MATCH (n:" + type + ")\n" +
+                    "OPTIONAL MATCH (n)-[r]-() //drops p's relations\n" +
+                    "DELETE r,n");
+            return null;
+        });
+    }
+
+    /**
+     * count all nodes of a specific type
+     * @return number of nodes in database
+     */
+    public long countNodes() {
+        return countNodes(null);
+    }
+
+    /**
+     * count all nodes of a specific type
+     * @param type node label
+     * @return number of nodes
+     */
+    public long countNodes(String type) {
+        return this.readTransaction(tx -> {
+            //only append ":", if a type is requested
+            String typeStr = (type != null && !type.isEmpty()) ? ":" + type : "";
+
+            Result result = tx.run("MATCH (n" + typeStr + ")\n" +
+                    "RETURN count(n) as count");
+            return result.single().get("count").asLong();
+        });
     }
 
     /**

@@ -22,4 +22,8 @@ public class Node {
         this.nodeID = nodeID;
     }
 
+    public long getNodeID() {
+        return nodeID;
+    }
+
 }
