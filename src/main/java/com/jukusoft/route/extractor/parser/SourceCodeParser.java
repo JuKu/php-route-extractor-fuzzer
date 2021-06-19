@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,8 +23,12 @@ import java.util.stream.Stream;
  */
 public class SourceCodeParser {
 
+    //see also: https://stackoverflow.com/questions/18864509/how-to-java-regex-to-match-everything-but-specified-pattern
+    // ^ means "except" (in braces)
     private static final Logger logger = LoggerFactory.getLogger(SourceCodeParser.class);
-    private static final Pattern pattern = Pattern.compile("@Route((.*\\)))", Pattern.MULTILINE);//"(?:filter=\\*\\*)(.*?)(?:&)"
+    private static final Pattern pattern = Pattern.compile("@Route\\(([^\\)]*)\\)", Pattern.MULTILINE | Pattern.DOTALL);//"(?:filter=\\*\\*)(.*?)(?:&)"
+    //@Route\([^\)]*\), old: @Route((.*\))), https://www.freeformatter.com/java-regex-tester.html#ad-output
+    //3. version: @Route\(([^\)]*)\) - with braces it matches the content as group
 
     /**
      * private constructor, because this class is a utility class
@@ -33,6 +38,8 @@ public class SourceCodeParser {
     }
 
     public static List<Route> parseSourceCodeDir(File srcDir) throws IOException {
+        Objects.requireNonNull(srcDir);
+
         if (!srcDir.exists() || !srcDir.isDirectory()) {
             throw new IllegalArgumentException("src directory does not exists or is not a directory: " + srcDir.getAbsolutePath());
         }
@@ -52,6 +59,8 @@ public class SourceCodeParser {
     }
 
     public static List<Route> parseSourceCodeFile(Path path) {
+        Objects.requireNonNull(path);
+
         List<Route> routes = new ArrayList<>();
 
         logger.info("parse file: {}", path.toFile().getAbsolutePath());
@@ -65,10 +74,14 @@ public class SourceCodeParser {
 
                 final Matcher m = pattern.matcher(content);
 
+                String baseUrl = "";
+                int counter = 0;
+
                 int cnt = 0;
                 while (m.find()) {
                     String line = m.group(0);
                     //System.out.println(++cnt + ": G1: " + m.group(1));
+                    //System.err.println(line);
 
                     String innerBracesContent = m.group(1).replace("(", "").replace(")", "").replace("\"", "");
                     //logger.info("content: {}", innerBracesContent);
@@ -85,6 +98,11 @@ public class SourceCodeParser {
                             //its the url
                             url = array[0];
                             logger.debug("endpoint url found: {}", url);
+
+                            if (counter == 0) {
+                                //its the base url
+                                baseUrl = url;
+                            }
                         } else {
                             String[] array1 = new String[array.length - 1];
                             System.arraycopy(array, 1, array1, 0, array1.length);
@@ -97,12 +115,22 @@ public class SourceCodeParser {
                         }
                     }
 
-                    if (!name.isEmpty()) {
+                    if (!name.isEmpty() && !url.equals(baseUrl)) {
+                        //remove the first "/" before the url, because base url already contains this (else we get something like "//")
+                        if (baseUrl.endsWith("/") && url.startsWith("/")) {
+                            url = url.substring(1);
+                        }
+
+                        url = baseUrl + url;
                         logger.debug("add entpoint url to list: {}", url);
 
                         Route route = new Route(url, name);
                         routes.add(route);
+                    } else {
+                        logger.warn("endpoint without name: {}", url);
                     }
+
+                    counter++;
                 }
 
                 logger.debug("found {} occurrences of @Route annotations in this file", cnt);
