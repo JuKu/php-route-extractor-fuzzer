@@ -44,6 +44,23 @@ public class Neo4JClientTest {
 
         //check, that node was deleted
         assertEquals(oldNodeCount, client.countNodes("junit"));
+        oldNodeCount = client.countNodes("junit");
+
+        //create node with multiple labels
+        node = client.createNode("junit", "test");
+
+        //check labels
+        assertTrue(node.listLabels().stream().anyMatch(label -> label.equals("junit")));
+        assertTrue(node.listLabels().stream().anyMatch(label -> label.equals("test")));
+
+        //remove label
+        node.removeLabel("test");
+        node = client.save(node);
+
+        assertFalse(node.listLabels().stream().anyMatch(label -> label.equals("test")));
+
+        //delete node
+        client.deleteNode(node);
     }
 
     @BeforeAll

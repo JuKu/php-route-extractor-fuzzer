@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * an easy to use Neo4j client without the required use of cypher.
@@ -95,13 +96,52 @@ public class Neo4JClient implements AutoCloseable {
      * @param type node label
      * @return node instance
      */
-    public Node createNode(String type) {
+    public Node createNode(String... type) {
         long nodeID = this.writeTransaction(tx -> {
-            Result result = tx.run("CREATE (n:" + type + ") RETURN id(n)");
+            String typeStr = (type != null) ? ":" + String.join(":", type) : "";
+            Result result = tx.run("CREATE (n" + typeStr + ") RETURN id(n)");
             return result.single().get("id(n)").asLong();
         });
 
-        return new Node(nodeID);
+        return getNodeById(nodeID);
+    }
+
+    /**
+     * reload a node from database.
+     *
+     * @param node neo4j node
+     * @return reloaded node
+     */
+    public Node reload(Node node) {
+        if (node.getNodeID() == 0) {
+            throw new IllegalStateException("node is not persisted");
+        }
+
+        return getNodeById(node.getNodeID());
+    }
+
+    /**
+     * get node from database.
+     *
+     * @param nodeID id of node
+     * @return node from database
+     */
+    public Node getNodeById(long nodeID) {
+        return this.readTransaction(tx -> {
+            Node node = new Node(nodeID);
+
+            Result result = tx.run("MATCH(n)\n" +
+                    "WHERE ID(n) = " + nodeID + "\n" +
+                    "RETURN labels(n) as labels");
+
+            for (String label : result.single().get("labels").asList(label -> label.isNull() || label.isEmpty() ? null : label.asString())) {
+                if (label != null && !label.equals("0")) {
+                    node.addLabel(label);
+                }
+            }
+
+            return node;
+        });
     }
 
     /**
@@ -113,7 +153,6 @@ public class Neo4JClient implements AutoCloseable {
             Result result = tx.run("MATCH (n) where ID(n)=" + node.getNodeID() + "\n" +
                     "OPTIONAL MATCH (n)-[r]-() //drops p's relations\n" +
                     "DELETE r,n");
-            System.err.println(result.list().stream().count());
             return null;
         });
     }
@@ -153,6 +192,51 @@ public class Neo4JClient implements AutoCloseable {
                     "RETURN count(n) as count");
             return result.single().get("count").asLong();
         });
+    }
+
+    /**
+     * persist data of a neo4j node.
+     * @param node neo4j node
+     */
+    public Node save(Node node) {
+        return this.writeTransaction(tx -> {
+            long nodeID = node.getNodeID();
+
+            //create new node, if not exists
+            if (nodeID == 0) {
+                String labels = node.listLabels().stream().count() > 1 ? String.join(":", node.listLabels()) : null;
+                Node node1 = this.createNode(labels);
+
+                node.setNodeID(node1.getNodeID());
+                nodeID = node1.getNodeID();
+            }
+
+            //update labels
+            updateLabels(tx, node);
+
+            return reload(node);
+        });
+    }
+
+    private void updateLabels(Transaction tx, Node node) {
+        //get old labels
+        Node oldNode = getNodeById(node.getNodeID());
+
+        List<String> labelsToRemove = oldNode.listLabels().stream().filter(label -> !node.listLabels().contains(label)).collect(Collectors.toList());
+        List<String> labelsToAdd = node.listLabels().stream().filter(label -> !oldNode.listLabels().contains(label)).collect(Collectors.toList());
+
+        String query = "MATCH (n)\n" +
+                "WHERE ID(n) = " + node.getNodeID() + "\n";
+
+        //remove old labels
+        for (String label : labelsToRemove) {
+            tx.run(query + "REMOVE n:" + label);
+        }
+
+        //add new labels
+        for (String label : labelsToAdd) {
+            tx.run(query + "SET n:" + label);
+        }
     }
 
     /**
