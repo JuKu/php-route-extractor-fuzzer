@@ -230,7 +230,8 @@ public class Neo4JClient implements AutoCloseable {
 
         //remove old labels
         for (String label : labelsToRemove) {
-            tx.run(query + "REMOVE n:" + label);
+            String execQuery = query + "REMOVE n:" + label;
+            tx.run(execQuery);
         }
 
         //add new labels

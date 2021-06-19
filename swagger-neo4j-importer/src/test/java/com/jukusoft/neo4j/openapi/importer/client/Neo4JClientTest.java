@@ -53,6 +53,13 @@ public class Neo4JClientTest {
         assertTrue(node.listLabels().stream().anyMatch(label -> label.equals("junit")));
         assertTrue(node.listLabels().stream().anyMatch(label -> label.equals("test")));
 
+        //reload node
+        node = client.reload(node);
+
+        //check labels again for reloaded node
+        assertTrue(node.listLabels().stream().anyMatch(label -> label.equals("junit")));
+        assertTrue(node.listLabels().stream().anyMatch(label -> label.equals("test")));
+
         //remove label
         node.removeLabel("test");
         node = client.save(node);
