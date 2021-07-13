@@ -2,6 +2,7 @@ package com.jukusoft.route.extractor.openapi;
 
 import com.jukusoft.route.extractor.parser.Parameter;
 import com.jukusoft.route.extractor.parser.Route;
+import com.jukusoft.route.extractor.writer.FileFormatGenerator;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -14,7 +15,7 @@ import java.util.*;
 /**
  * this class is responsible for generating OpenAPI specification files (swagger json)
  */
-public class OpenAPIGenerator {
+public class OpenAPI20Generator implements FileFormatGenerator {
 
     private final Path outputDir;
 
@@ -23,7 +24,7 @@ public class OpenAPIGenerator {
      *
      * @param outputDir output directory, where generated OpenAPI files should be stored
      */
-    public OpenAPIGenerator(Path outputDir) {
+    public OpenAPI20Generator(Path outputDir) {
         this.outputDir = outputDir;
 
         if (!outputDir.toFile().exists() || !outputDir.toFile().isDirectory()) {
@@ -39,7 +40,8 @@ public class OpenAPIGenerator {
      * @param basePath base path
      * @param fileName
      */
-    public void generateJSON(List<Route> routes, String host, String basePath, String fileName) throws IOException {
+    @Override
+    public void generateOutputFile(List<Route> routes, String host, String basePath, String fileName) throws IOException {
         File file = new File(outputDir.toFile(), fileName);
         file.createNewFile();
 
@@ -49,6 +51,16 @@ public class OpenAPIGenerator {
 
         byte[] strToBytes = content.getBytes();
         Files.write(file.toPath(), strToBytes);
+    }
+
+    @Override
+    public String getFileExtension() {
+        return ".json";
+    }
+
+    @Override
+    public String getPreferredFileName() {
+        return "result.json";
     }
 
     private JSONObject generateJSON(List<Route> routes, String host, String basePath) {
