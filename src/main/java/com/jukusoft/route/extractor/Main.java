@@ -45,7 +45,7 @@ public class Main {
             //generate output files
             for (FileFormatGenerator generator : outputFileGenerators) {
                 String filename = params.getOrDefault("filename", generator.getPreferredFileName());
-                LOGGER.info("Generate output file: {}", filename);
+                LOGGER.info("Generate output file: {} by generator: {}", filename, generator.getClass().getSimpleName());
 
                 generator.generateOutputFile(routes, params.getOrDefault("host", "localhost:8080"), params.getOrDefault("basePath", "/"), filename);
             }
