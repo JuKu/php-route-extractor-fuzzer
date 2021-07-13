@@ -1,7 +1,8 @@
 package com.jukusoft.route.extractor;
 
 import com.jukusoft.route.extractor.cli.CLIArgumentsParser;
-import com.jukusoft.route.extractor.openapi.OpenAPI20Generator;
+import com.jukusoft.route.extractor.writer.impl.TextListGenerator;
+import com.jukusoft.route.extractor.writer.impl.openapi.OpenAPI20Generator;
 import com.jukusoft.route.extractor.parser.Route;
 import com.jukusoft.route.extractor.parser.SourceCodeParser;
 import com.jukusoft.route.extractor.writer.FileFormatGenerator;
@@ -39,6 +40,7 @@ public class Main {
             // a list with target file formats
             List<FileFormatGenerator> outputFileGenerators = new ArrayList<>();
             outputFileGenerators.add(new OpenAPI20Generator(Path.of(params.get("output"))));
+            outputFileGenerators.add(new TextListGenerator(Path.of(params.get("output"))));
 
             LOGGER.info("generate output file formats...");
 

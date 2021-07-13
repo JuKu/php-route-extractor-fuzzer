@@ -1,4 +1,4 @@
-package com.jukusoft.route.extractor.openapi;
+package com.jukusoft.route.extractor.writer.impl.openapi;
 
 import com.jukusoft.route.extractor.parser.Parameter;
 import com.jukusoft.route.extractor.parser.Route;
@@ -42,8 +42,7 @@ public class OpenAPI20Generator implements FileFormatGenerator {
      */
     @Override
     public void generateOutputFile(List<Route> routes, String host, String basePath, String fileName) throws IOException {
-        File file = new File(outputDir.toFile(), fileName);
-        file.createNewFile();
+        File file = createOrOverrideFile(outputDir, fileName);
 
         //generate OpenAPI spec
         int spacesToIndentEachLevel = 2;

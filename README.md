@@ -1,5 +1,5 @@
-# php-route-extractor-fuzzer
-A small application to extract @Route annotations from PHP code and generate a Swagger / OpenAPI specification after that
+# PHP Route Extractor
+A small application to extract @Route annotations from PHP Symfony code and generate a Swagger / OpenAPI specification after that
 
 ## Basic Usage
 

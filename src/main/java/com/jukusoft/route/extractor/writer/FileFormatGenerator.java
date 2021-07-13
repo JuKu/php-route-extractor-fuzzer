@@ -2,7 +2,9 @@ package com.jukusoft.route.extractor.writer;
 
 import com.jukusoft.route.extractor.parser.Route;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 
 /**
@@ -36,5 +38,29 @@ public interface FileFormatGenerator {
      * @return preferred file name without extension
      */
     public String getPreferredFileName();
+
+    /**
+     * create a new file, if no exists or remove the content from the old file.
+     *
+     * @param outputDir output directory
+     * @param fileName file name
+     * @return file instance
+     */
+    public default File createOrOverrideFile(Path outputDir, String fileName) {
+        File file = new File(outputDir.toFile(), fileName);
+
+        //delete old file, if file already exists
+        if (file.exists()) {
+            file.delete();
+        }
+
+        try {
+            file.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return file;
+    }
 
 }
