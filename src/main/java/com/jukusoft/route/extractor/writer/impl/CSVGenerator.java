@@ -15,7 +15,7 @@ import java.util.List;
  *
  * @author Justin Kuenzel
  */
-public class TextListGenerator implements FileFormatGenerator {
+public class CSVGenerator implements FileFormatGenerator {
 
     /**
      * the output directory.
@@ -27,7 +27,7 @@ public class TextListGenerator implements FileFormatGenerator {
      *
      * @param outputDir output directory, where generated OpenAPI files should be stored
      */
-    public TextListGenerator(Path outputDir) {
+    public CSVGenerator(Path outputDir) {
         this.outputDir = outputDir;
 
         if (!outputDir.toFile().exists() || !outputDir.toFile().isDirectory()) {
@@ -41,20 +41,23 @@ public class TextListGenerator implements FileFormatGenerator {
 
         //create new file writer
         try (Writer fileWriter = new FileWriter(file)) {
+            //write the header line
+            fileWriter.write("Route,Method,Name,Produces" + System.lineSeparator());
+
             for (Route route : routes) {
-                fileWriter.write(route.getUrl() + System.lineSeparator());
+                fileWriter.write(route.getUrl() + "," + route.getMethod() + "," + route.getName() + "," + route.getProduces() + System.lineSeparator());
             }
         }
     }
 
     @Override
     public String getFileExtension() {
-        return ".txt";
+        return ".csv";
     }
 
     @Override
     public String getPreferredFileName() {
-        return "routes.txt";
+        return "routes.csv";
     }
 
 }
