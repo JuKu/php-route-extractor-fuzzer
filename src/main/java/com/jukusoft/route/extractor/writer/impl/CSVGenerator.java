@@ -42,10 +42,10 @@ public class CSVGenerator implements FileFormatGenerator {
         //create new file writer
         try (Writer fileWriter = new FileWriter(file)) {
             //write the header line
-            fileWriter.write("Route,Method,Name,Produces" + System.lineSeparator());
+            fileWriter.write("Route;Method;Name;Produces" + System.lineSeparator());
 
             for (Route route : routes) {
-                fileWriter.write(route.getUrl() + "," + route.getMethod() + "," + route.getName() + "," + route.getProduces() + System.lineSeparator());
+                fileWriter.write(route.getUrl() + ";" + route.getMethod() + ";" + route.getName() + ";" + route.getProduces() + System.lineSeparator());
             }
         }
     }
