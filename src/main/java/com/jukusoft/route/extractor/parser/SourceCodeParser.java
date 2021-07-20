@@ -37,6 +37,13 @@ public class SourceCodeParser {
         //
     }
 
+    /**
+     * parse source code directory.
+     *
+     * @param srcDir source code directory
+     * @return list with extracted routes
+     * @throws IOException if IOException occurs
+     */
     public static List<Route> parseSourceCodeDir(File srcDir) throws IOException {
         Objects.requireNonNull(srcDir);
 
