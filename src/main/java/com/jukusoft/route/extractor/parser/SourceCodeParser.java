@@ -65,6 +65,12 @@ public class SourceCodeParser {
         return routes;
     }
 
+    /**
+     * parse a single source code file.
+     *
+     * @param path path to source code file
+     * @return list with all routes extracted from source code file
+     */
     public static List<Route> parseSourceCodeFile(Path path) {
         Objects.requireNonNull(path);
 
