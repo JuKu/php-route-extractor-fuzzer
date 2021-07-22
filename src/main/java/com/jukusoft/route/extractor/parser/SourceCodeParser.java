@@ -104,9 +104,11 @@ public class SourceCodeParser {
                     String url = "";
                     String name = "";
 
+                    // iterate through all params in the braces (comma-seperated)
                     for (String param : params) {
                         String[] array = param.split("=");
 
+                        //is there only one "="?
                         if (array.length == 1) {
                             //its the url
                             url = array[0];
@@ -117,6 +119,7 @@ public class SourceCodeParser {
                                 baseUrl = url;
                             }
                         } else {
+                            //join the second and all following values together
                             String[] array1 = new String[array.length - 1];
                             System.arraycopy(array, 1, array1, 0, array1.length);
                             array[1] = String.join("=", array1);
