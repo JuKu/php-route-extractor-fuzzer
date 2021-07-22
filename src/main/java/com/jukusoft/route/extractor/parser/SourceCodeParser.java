@@ -127,6 +127,9 @@ public class SourceCodeParser {
 
                             if (array[0].equals("name")) {
                                 name = array[1];
+                            } else {
+                                //add other parameter
+                                logger.info("other parameter found: {}, value: {}", array[0], array[1]);
                             }
                         }
                     }
