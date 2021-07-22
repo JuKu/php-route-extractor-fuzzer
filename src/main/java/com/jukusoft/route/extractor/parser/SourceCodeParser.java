@@ -1,5 +1,6 @@
 package com.jukusoft.route.extractor.parser;
 
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,9 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -104,6 +103,9 @@ public class SourceCodeParser {
                     String url = "";
                     String name = "";
 
+                    // map with additional params, e.q. "requirements" or "defaults"
+                    Map<String,String> additionalParams = new HashMap<>();
+
                     // iterate through all params in the braces (comma-seperated)
                     for (String param : params) {
                         String[] array = param.split("=");
@@ -130,6 +132,7 @@ public class SourceCodeParser {
                             } else {
                                 //add other parameter
                                 logger.info("other parameter found: {}, value: {}", array[0], array[1]);
+                                additionalParams.put(array[0], array[1]);
                             }
                         }
                     }
@@ -144,6 +147,40 @@ public class SourceCodeParser {
                         logger.debug("add entpoint url to list: {}", url);
 
                         Route route = new Route(url, name);
+
+                        if (additionalParams.containsKey("defaults")) {
+                            String values = additionalParams.get("defaults");
+
+                            //remove "{" and "}"
+                            values = values.replace("{", "").replace("}", "");
+
+                            for (String defaultPair : values.split(",")) {
+                                String[] array2 = defaultPair.split("=");
+                                String paramName = array2[0].trim();
+                                String defaultValue = array2[1].trim();
+
+                                logger.debug("add default value, key: {}, value: {}", paramName, defaultValue);
+                                route.addDefaultValue(paramName, defaultValue);
+                            }
+                        }
+
+                        if (additionalParams.containsKey("requirements")) {
+                            String paramContent = additionalParams.get("requirements");
+
+                            // remove "*" from multiline comments
+                            paramContent = paramContent.replace("*", "");
+
+                            // make the ini string to a json string
+                            paramContent = paramContent.replace(" =", ":");
+
+                            JSONObject json = new JSONObject(paramContent);
+
+                            for (String key : json.keySet()) {
+                                logger.info("add required parameter: {}", key);
+                                route.addParameter(key, key, true, "string", route.getDefaultValue(key).orElse(""));
+                            }
+                        }
+
                         routes.add(route);
                     } else {
                         logger.warn("endpoint without name: {}", url);

@@ -1,7 +1,6 @@
 package com.jukusoft.route.extractor.parser;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class Route {
 
@@ -17,6 +16,7 @@ public class Route {
     private METHOD method = METHOD.GET;
     private String produces = "application/xml";
     private List<Parameter> parameters = new ArrayList<>();
+    private Map<String,String> defaultValues = new HashMap<>();
 
     public Route(String url, String name) {
         this.url = url;
@@ -45,6 +45,18 @@ public class Route {
 
     public void addParameter(String name, String in, boolean required, String type, String defaultStr) {
         parameters.add(new Parameter(name, in, required, type, defaultStr));
+    }
+
+    public Map<String, String> getDefaultValues() {
+        return defaultValues;
+    }
+
+    public void addDefaultValue(String paramName, String defaultValue) {
+        defaultValues.put(paramName, defaultValue);
+    }
+
+    public Optional<String> getDefaultValue(String param) {
+        return defaultValues.containsKey(param) ? Optional.of(defaultValues.get(param)) : Optional.empty();
     }
 
 }
