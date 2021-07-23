@@ -43,7 +43,7 @@ public class Route {
         return parameters;
     }
 
-    public void addParameter(String name, String in, boolean required, String type, String defaultStr) {
+    public void addParameter(String name, Parameter.IN_TYPE in, boolean required, String type, String defaultStr) {
         parameters.add(new Parameter(name, in, required, type, defaultStr));
     }
 

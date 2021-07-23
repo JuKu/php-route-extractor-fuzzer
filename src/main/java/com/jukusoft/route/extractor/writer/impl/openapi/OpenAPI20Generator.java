@@ -85,6 +85,7 @@ public class OpenAPI20Generator implements FileFormatGenerator {
                 JSONObject path = new JSONObject();
 
                 //TODO: add code here
+                path.put("summary", route.getName());
                 path.put("description", route.getName());
 
                 JSONArray producesArr = new JSONArray();

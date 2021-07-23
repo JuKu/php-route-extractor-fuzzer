@@ -177,7 +177,7 @@ public class SourceCodeParser {
 
                             for (String key : json.keySet()) {
                                 logger.info("add required parameter: {}", key);
-                                route.addParameter(key, key, true, "string", route.getDefaultValue(key).orElse(""));
+                                route.addParameter(key, Parameter.IN_TYPE.PATH, true, "string", route.getDefaultValue(key).orElse(""));
                             }
                         }
 
