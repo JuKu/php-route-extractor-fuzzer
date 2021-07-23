@@ -1,6 +1,7 @@
 package com.jukusoft.route.extractor;
 
 import com.jukusoft.route.extractor.cli.CLIArgumentsParser;
+import com.jukusoft.route.extractor.parser.Parser;
 import com.jukusoft.route.extractor.writer.impl.CSVGenerator;
 import com.jukusoft.route.extractor.writer.impl.openapi.OpenAPI20Generator;
 import com.jukusoft.route.extractor.parser.Route;
@@ -15,6 +16,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * main class
@@ -36,6 +38,21 @@ public class Main {
             Map<String,String> params = CLIArgumentsParser.parseArguments(args);
 
             List<Route> routes = SourceCodeParser.parseSourceCodeDir(new File(params.get("src")));
+
+            //list with parsers
+            List<Parser> parsers = new ArrayList<>();
+
+            //call all parsers, if activated
+            for (Parser parser : parsers) {
+                if (parser.isActivated(params)) {
+                    List<Route> parsedRoutes = parser.parse(new File(params.get(parser.getParameter())));
+
+                    //don't add duplicate routes
+                    routes.addAll(parsedRoutes.stream()
+                            .filter(route -> !routes.stream().anyMatch(route1 -> route1.getUrl().equals(route.getUrl())))
+                            .collect(Collectors.toList()));
+                }
+            }
 
             // a list with target file formats
             List<FileFormatGenerator> outputFileGenerators = new ArrayList<>();
