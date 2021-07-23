@@ -2,6 +2,7 @@ package com.jukusoft.route.extractor;
 
 import com.jukusoft.route.extractor.cli.CLIArgumentsParser;
 import com.jukusoft.route.extractor.parser.Parser;
+import com.jukusoft.route.extractor.parser.SymfonyJSONParser;
 import com.jukusoft.route.extractor.writer.impl.CSVGenerator;
 import com.jukusoft.route.extractor.writer.impl.openapi.OpenAPI20Generator;
 import com.jukusoft.route.extractor.parser.Route;
@@ -41,6 +42,7 @@ public class Main {
 
             //list with parsers
             List<Parser> parsers = new ArrayList<>();
+            parsers.add(new SymfonyJSONParser());
 
             //call all parsers, if activated
             for (Parser parser : parsers) {
