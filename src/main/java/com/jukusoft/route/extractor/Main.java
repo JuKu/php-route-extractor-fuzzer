@@ -52,7 +52,7 @@ public class Main {
 
                     //don't add duplicate routes
                     routes.addAll(parsedRoutes.stream()
-                            .filter(route -> !routes.stream().anyMatch(route1 -> route1.getUrl().equals(route.getUrl())))
+                            .filter(route -> !routes.stream().anyMatch(route1 -> route1.getName().equals(route.getName())))
                             .collect(Collectors.toList()));
                 } else {
                     LOGGER.debug("parser is not activated: {}", parser.getClass().getCanonicalName());
