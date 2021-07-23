@@ -32,16 +32,32 @@ public class Parameter {
         return in.name().toLowerCase();
     }
 
+    public void setIn(IN_TYPE in) {
+        this.in = in;
+    }
+
     public boolean getRequired() {
         return required;
+    }
+
+    public void setRequired(boolean required) {
+        this.required = required;
     }
 
     public String getType() {
         return type;
     }
 
+    public void setType(String type) {
+        this.type = type;
+    }
+
     public String getDefaultStr() {
         return defaultStr;
+    }
+
+    public void setDefaultStr(String defaultStr) {
+        this.defaultStr = defaultStr;
     }
 
 }

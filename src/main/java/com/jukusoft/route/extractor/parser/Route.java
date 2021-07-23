@@ -35,6 +35,10 @@ public class Route {
         return method;
     }
 
+    public void setMethod(METHOD method) {
+        this.method = method;
+    }
+
     public String getProduces() {
         return produces;
     }
@@ -44,6 +48,17 @@ public class Route {
     }
 
     public void addParameter(String name, Parameter.IN_TYPE in, boolean required, String type, String defaultStr) {
+        if (hasParameter(name)) {
+            //override values
+            Parameter parameter = parameters.stream().filter(param -> param.getName().equals(name)).findFirst().get();
+            parameter.setIn(in);
+            parameter.setRequired(required);
+            parameter.setType(type);
+            parameter.setDefaultStr(defaultStr);
+
+            return;
+        }
+
         parameters.add(new Parameter(name, in, required, type, defaultStr));
     }
 
