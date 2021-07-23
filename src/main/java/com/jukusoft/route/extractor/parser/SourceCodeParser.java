@@ -181,6 +181,21 @@ public class SourceCodeParser {
                             }
                         }
 
+                        //fix missing default parameters, which aren't required
+                        for (Map.Entry<String, String> entry : route.getDefaultValues().entrySet()) {
+                            String paramName = entry.getKey();
+                            String defaultValue = entry.getValue();
+
+                            //check, if parameter already exists in required parameters
+                            if (!route.hasParameter(paramName)) {
+                                //add parameter
+                                logger.info("add parameter with default name: {}", paramName);
+
+                                //NOTE: paramaters with default values are never required parameter (specified by specification)
+                                route.addParameter(paramName, Parameter.IN_TYPE.PATH, false, "string", defaultValue);
+                            }
+                        }
+
                         routes.add(route);
                     } else {
                         logger.warn("endpoint without name: {}", url);

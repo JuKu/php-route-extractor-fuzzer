@@ -47,6 +47,10 @@ public class Route {
         parameters.add(new Parameter(name, in, required, type, defaultStr));
     }
 
+    public boolean hasParameter(String name) {
+        return parameters.stream().anyMatch(param -> param.getName().equals(name));
+    }
+
     public Map<String, String> getDefaultValues() {
         return defaultValues;
     }
