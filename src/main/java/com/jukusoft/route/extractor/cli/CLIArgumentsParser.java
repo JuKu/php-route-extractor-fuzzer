@@ -49,6 +49,10 @@ public class CLIArgumentsParser {
         basePath.setRequired(false);
         options.addOption(basePath);
 
+        Option symfonyJSON = new Option("j", "symfonyJSON", true, "symfony json source file to parse");
+        symfonyJSON.setRequired(false);
+        options.addOption(symfonyJSON);
+
         CommandLineParser parser = new DefaultParser();
         HelpFormatter formatter = new HelpFormatter();
         CommandLine cmd;

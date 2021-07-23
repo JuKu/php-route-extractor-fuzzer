@@ -33,9 +33,10 @@ public interface Parser {
      * parse directory or file
      *
      * @param srcFile directory or file
+     * @param routes routes list of already existing routes, so that the parser can add additional information to existing routes
      * @return list of routes
      * @throws IOException if a file exception occurs
      */
-    public List<Route> parse(File srcFile) throws IOException;
+    public List<Route> parse(File srcFile, List<Route> routes) throws IOException;
 
 }

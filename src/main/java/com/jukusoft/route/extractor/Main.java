@@ -45,12 +45,15 @@ public class Main {
             //call all parsers, if activated
             for (Parser parser : parsers) {
                 if (parser.isActivated(params)) {
-                    List<Route> parsedRoutes = parser.parse(new File(params.get(parser.getParameter())));
+                    LOGGER.info("call parser: {}", parser.getClass().getCanonicalName());
+                    List<Route> parsedRoutes = parser.parse(new File(params.get(parser.getParameter())), routes);
 
                     //don't add duplicate routes
                     routes.addAll(parsedRoutes.stream()
                             .filter(route -> !routes.stream().anyMatch(route1 -> route1.getUrl().equals(route.getUrl())))
                             .collect(Collectors.toList()));
+                } else {
+                    LOGGER.debug("parser is not activated: {}", parser.getClass().getCanonicalName());
                 }
             }
 
