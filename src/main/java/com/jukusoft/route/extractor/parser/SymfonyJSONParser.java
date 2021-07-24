@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class SymfonyJSONParser implements Parser {
 
@@ -17,6 +19,11 @@ public class SymfonyJSONParser implements Parser {
      * the class logger.
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(SymfonyJSONParser.class);
+
+    /**
+     * regex for route url
+     */
+    private static final Pattern pattern = Pattern.compile("\\{([^\\)]*)\\}", Pattern.MULTILINE | Pattern.DOTALL);
 
     @Override
     public String getParameter() {
@@ -91,6 +98,8 @@ public class SymfonyJSONParser implements Parser {
                 try {
                     //add required parameters
                     for (String requiredParam : routeJSON.getJSONObject("requirements").keySet()) {
+                        String value = routeJSON.getJSONObject("requirements").getString(requiredParam);
+
                         //check, if it is a path or a query / form parameter
                         Parameter.IN_TYPE paramType = url.contains("{" + requiredParam + "}") ? Parameter.IN_TYPE.PATH : Parameter.IN_TYPE.FORM;
 
@@ -100,7 +109,20 @@ public class SymfonyJSONParser implements Parser {
                     }
                 } catch (JSONException e) {
                     //don't do anything here, because this is expected, if no required paramaters exists
-                    LOGGER.debug("route doesn't contains any required parameters: '{}'", url);
+                    LOGGER.debug("route doesn't contains any required parameters: '{}', json string: {}", url, routeJSON.getString("requirements"));
+                }
+
+                //parse path variables
+                final Matcher m = pattern.matcher(url);
+
+                while (m.find()) {
+                    String line = m.group(0);
+                    String paramName = m.group(1);
+                    LOGGER.info("found path variable: {}, variable: {}", line, paramName);
+
+                    if (!routeMethod.hasParameter(paramName)) {
+                        routeMethod.addParameter(paramName, Parameter.IN_TYPE.PATH, true, paramName.toLowerCase().contains("id") ? "integer" : "string", "");
+                    }
                 }
             }
         }
