@@ -85,7 +85,7 @@ public class SymfonyJSONParser implements Parser {
                     }
                 } catch (JSONException e) {
                     //don't do anything here, because this is expected, if no default paramaters are set
-                    LOGGER.debug("route doesn't contains any required parameters: '{}'", url);
+                    LOGGER.debug("route doesn't contains any default parameters: '{}'", url);
                 }
 
                 try {

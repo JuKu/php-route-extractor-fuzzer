@@ -59,6 +59,9 @@ public class Main {
                 }
             }
 
+            long methodCount = routes.stream().map(route -> route.getMethods().size()).reduce(0, Integer::sum);
+            LOGGER.info("{} routes and {} methods found", routes.size(), methodCount);
+
             // a list with target file formats
             List<FileFormatGenerator> outputFileGenerators = new ArrayList<>();
             outputFileGenerators.add(new OpenAPI20Generator(Path.of(params.get("output"))));
