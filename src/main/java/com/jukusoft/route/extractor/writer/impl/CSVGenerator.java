@@ -1,6 +1,7 @@
 package com.jukusoft.route.extractor.writer.impl;
 
 import com.jukusoft.route.extractor.parser.Route;
+import com.jukusoft.route.extractor.parser.RouteMethod;
 import com.jukusoft.route.extractor.writer.FileFormatGenerator;
 
 import java.io.File;
@@ -45,7 +46,8 @@ public class CSVGenerator implements FileFormatGenerator {
             fileWriter.write("Route;Method;Name;Produces" + System.lineSeparator());
 
             for (Route route : routes) {
-                fileWriter.write(route.getUrl() + ";" + route.getMethod() + ";" + route.getName() + ";" + route.getProduces() + System.lineSeparator());
+                RouteMethod routeMethod = route.getMethods().entrySet().stream().findFirst().get().getValue();
+                fileWriter.write(route.getUrl() + ";" + routeMethod.getMethod() + ";" + route.getName() + ";" + routeMethod.getProduces() + System.lineSeparator());
             }
         }
     }

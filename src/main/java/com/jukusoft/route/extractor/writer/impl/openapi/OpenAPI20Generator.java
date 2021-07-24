@@ -2,6 +2,7 @@ package com.jukusoft.route.extractor.writer.impl.openapi;
 
 import com.jukusoft.route.extractor.parser.Parameter;
 import com.jukusoft.route.extractor.parser.Route;
+import com.jukusoft.route.extractor.parser.RouteMethod;
 import com.jukusoft.route.extractor.writer.FileFormatGenerator;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -82,40 +83,45 @@ public class OpenAPI20Generator implements FileFormatGenerator {
             JSONObject methodJSON = new JSONObject();
 
             for (Route route : entry.getValue()) {
-                JSONObject path = new JSONObject();
+                for (Map.Entry<Route.METHOD, RouteMethod> methodEntry : route.getMethods().entrySet()) {
+                    Route.METHOD method = methodEntry.getKey();
+                    RouteMethod routeMethod = methodEntry.getValue();
 
-                //TODO: add code here
-                path.put("summary", route.getName());
-                path.put("description", route.getName());
+                    JSONObject path = new JSONObject();
 
-                JSONArray producesArr = new JSONArray();
-                producesArr.put(route.getProduces());
-                path.put("produces", producesArr);
+                    //TODO: add code here
+                    path.put("summary", route.getName());
+                    path.put("description", route.getName());
 
-                if (!route.getParameters().isEmpty()) {
-                    JSONArray parametersArray = new JSONArray();
+                    JSONArray producesArr = new JSONArray();
+                    producesArr.put(routeMethod.getProduces());
+                    path.put("produces", producesArr);
 
-                    for (Parameter param : route.getParameters()) {
-                        JSONObject param1 = new JSONObject();
+                    if (!routeMethod.getParameters().isEmpty()) {
+                        JSONArray parametersArray = new JSONArray();
 
-                        param1.put("name", param.getName());
-                        param1.put("in", param.getIn());
-                        param1.put("required", param.getRequired());
-                        param1.put("type", param.getType());
-                        param1.put("description", param.getName());
-                        param1.put("operationId", param.getName());
+                        for (Parameter param : routeMethod.getParameters()) {
+                            JSONObject param1 = new JSONObject();
 
-                        if (!param.getDefaultStr().isEmpty()) {
-                            param1.put("default", param.getDefaultStr());
+                            param1.put("name", param.getName());
+                            param1.put("in", param.getIn());
+                            param1.put("required", param.getRequired());
+                            param1.put("type", param.getType());
+                            param1.put("description", param.getName());
+                            param1.put("operationId", param.getName());
+
+                            if (!param.getDefaultStr().isEmpty()) {
+                                param1.put("default", param.getDefaultStr());
+                            }
+
+                            parametersArray.put(param1);
                         }
 
-                        parametersArray.put(param1);
+                        path.put("parameters", parametersArray);
                     }
 
-                    path.put("parameters", parametersArray);
+                    methodJSON.put(routeMethod.getMethod().toString().toLowerCase(Locale.ROOT), path);
                 }
-
-                methodJSON.put(route.getMethod().toString().toLowerCase(Locale.ROOT), path);
             }
 
             paths.put(entry.getKey(), methodJSON);

@@ -58,41 +58,50 @@ public class SymfonyJSONParser implements Parser {
 
             //TODO: if any, create multiple routes
             String method = routeJSON.getString("method");
-            route.setMethod(Route.METHOD.valueOf(method.equals("ANY") ? "GET" : method));
+            method = method.replace("ANY", "GET|POST|PUT|DELETE");
 
-            try {
-                //add default parameters
-                for (String defaultParamKey : routeJSON.getJSONObject("defaults").keySet()) {
-                    String defaultValue = routeJSON.getJSONObject("defaults").getString(defaultParamKey);
-                    route.addDefaultValue(defaultParamKey, defaultValue);
-                    route.addParameter(defaultParamKey, Parameter.IN_TYPE.FORM, false, "string", defaultValue);
+            //Quick & Dirty Fix, because "|" is a special character and splits interprets this as regex, instead as a character
+            method = method.replace("|", ",");
 
-                    //if any non-path variable is found, it's a POST request
-                    route.setMethod(Route.METHOD.POST);
+            for (String method1 : method.split(",")) {
+                LOGGER.info("HTTP method found: {}", method1);
+                Route.METHOD method2 = Route.METHOD.valueOf(method1);
+
+                RouteMethod routeMethod = null;
+
+                if (route.getMethods().containsKey(method)) {
+                    routeMethod = route.getMethods().get(method);
+                } else {
+                    routeMethod = new RouteMethod(method2);
+                    route.addRouteMethod(method2, routeMethod);
                 }
-            } catch (JSONException e) {
-                //don't do anything here, because this is expected, if no default paramaters are set
-                LOGGER.debug("route doesn't contains any required parameters: '{}'", url);
-            }
 
-            try {
-                //add required parameters
-                for (String requiredParam : routeJSON.getJSONObject("requirements").keySet()) {
-                    //check, if it is a path or a query / form parameter
-                    Parameter.IN_TYPE paramType = url.contains("{" + requiredParam + "}") ? Parameter.IN_TYPE.PATH : Parameter.IN_TYPE.FORM;
-
-                    if (!paramType.equals(Parameter.IN_TYPE.PATH)) {
-                        //if any non-path variable is found, it's a POST request
-                        route.setMethod(Route.METHOD.POST);
+                try {
+                    //add default parameters
+                    for (String defaultParamKey : routeJSON.getJSONObject("defaults").keySet()) {
+                        String defaultValue = routeJSON.getJSONObject("defaults").getString(defaultParamKey);
+                        routeMethod.addDefaultValue(defaultParamKey, defaultValue);
+                        routeMethod.addParameter(defaultParamKey, Parameter.IN_TYPE.FORM, false, "string", defaultValue);
                     }
-
-                    LOGGER.debug("add route required parameter: {}, url: {}", requiredParam, url);
-                    String varType = routeJSON.getJSONObject("requirements").getString(requiredParam).toLowerCase().equals("\\\\d+") ? "integer" : "string";
-                    route.addParameter(requiredParam, paramType, true, varType, "");
+                } catch (JSONException e) {
+                    //don't do anything here, because this is expected, if no default paramaters are set
+                    LOGGER.debug("route doesn't contains any required parameters: '{}'", url);
                 }
-            } catch (JSONException e) {
-                //don't do anything here, because this is expected, if no required paramaters exists
-                LOGGER.debug("route doesn't contains any required parameters: '{}'", url);
+
+                try {
+                    //add required parameters
+                    for (String requiredParam : routeJSON.getJSONObject("requirements").keySet()) {
+                        //check, if it is a path or a query / form parameter
+                        Parameter.IN_TYPE paramType = url.contains("{" + requiredParam + "}") ? Parameter.IN_TYPE.PATH : Parameter.IN_TYPE.FORM;
+
+                        LOGGER.debug("add route required parameter: {}, url: {}", requiredParam, url);
+                        String varType = routeJSON.getJSONObject("requirements").getString(requiredParam).toLowerCase().equals("\\\\d+") ? "integer" : "string";
+                        routeMethod.addParameter(requiredParam, paramType, true, varType, "");
+                    }
+                } catch (JSONException e) {
+                    //don't do anything here, because this is expected, if no required paramaters exists
+                    LOGGER.debug("route doesn't contains any required parameters: '{}'", url);
+                }
             }
         }
 

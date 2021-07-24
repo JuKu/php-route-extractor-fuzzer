@@ -76,6 +76,8 @@ public class Main {
 
             LOGGER.info("Generation of output files finished!");
         } catch (IllegalArgumentException e) {
+            //e.printStackTrace();
+
             //logging is already done by CLIArgumentsParser
             System.exit(1);
         }

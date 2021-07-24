@@ -11,16 +11,22 @@ public class Route {
         DELETE
     }
 
+    private Map<METHOD,RouteMethod> methods = new HashMap<>();
+
     private String url;
     private String name;
-    private METHOD method = METHOD.GET;
-    private String produces = "application/xml";
-    private List<Parameter> parameters = new ArrayList<>();
-    private Map<String,String> defaultValues = new HashMap<>();
 
     public Route(String url, String name) {
         this.url = url;
         this.name = name;
+    }
+
+    public void addRouteMethod(METHOD method, RouteMethod routeMethod) {
+        methods.put(method, routeMethod);
+    }
+
+    public Map<METHOD,RouteMethod> getMethods() {
+        return methods;
     }
 
     public String getUrl() {
@@ -29,53 +35,6 @@ public class Route {
 
     public String getName() {
         return name;
-    }
-
-    public METHOD getMethod() {
-        return method;
-    }
-
-    public void setMethod(METHOD method) {
-        this.method = method;
-    }
-
-    public String getProduces() {
-        return produces;
-    }
-
-    public List<Parameter> getParameters() {
-        return parameters;
-    }
-
-    public void addParameter(String name, Parameter.IN_TYPE in, boolean required, String type, String defaultStr) {
-        if (hasParameter(name)) {
-            //override values
-            Parameter parameter = parameters.stream().filter(param -> param.getName().equals(name)).findFirst().get();
-            parameter.setIn(in);
-            parameter.setRequired(required);
-            parameter.setType(type);
-            parameter.setDefaultStr(defaultStr);
-
-            return;
-        }
-
-        parameters.add(new Parameter(name, in, required, type, defaultStr));
-    }
-
-    public boolean hasParameter(String name) {
-        return parameters.stream().anyMatch(param -> param.getName().equals(name));
-    }
-
-    public Map<String, String> getDefaultValues() {
-        return defaultValues;
-    }
-
-    public void addDefaultValue(String paramName, String defaultValue) {
-        defaultValues.put(paramName, defaultValue);
-    }
-
-    public Optional<String> getDefaultValue(String param) {
-        return defaultValues.containsKey(param) ? Optional.of(defaultValues.get(param)) : Optional.empty();
     }
 
 }

@@ -147,6 +147,8 @@ public class SourceCodeParser {
                         logger.debug("add entpoint url to list: {}", url);
 
                         Route route = new Route(url, name);
+                        RouteMethod method = new RouteMethod(Route.METHOD.GET);
+                        route.addRouteMethod(Route.METHOD.GET, method);
 
                         if (additionalParams.containsKey("defaults")) {
                             String values = additionalParams.get("defaults");
@@ -160,7 +162,7 @@ public class SourceCodeParser {
                                 String defaultValue = array2[1].trim();
 
                                 logger.debug("add default value, key: {}, value: {}", paramName, defaultValue);
-                                route.addDefaultValue(paramName, defaultValue);
+                                method.addDefaultValue(paramName, defaultValue);
                             }
                         }
 
@@ -177,22 +179,22 @@ public class SourceCodeParser {
 
                             for (String key : json.keySet()) {
                                 logger.info("add required parameter: {}", key);
-                                route.addParameter(key, Parameter.IN_TYPE.PATH, true, "string", route.getDefaultValue(key).orElse(""));
+                                method.addParameter(key, Parameter.IN_TYPE.PATH, true, "string", method.getDefaultValue(key).orElse(""));
                             }
                         }
 
                         //fix missing default parameters, which aren't required
-                        for (Map.Entry<String, String> entry : route.getDefaultValues().entrySet()) {
+                        for (Map.Entry<String, String> entry : method.getDefaultValues().entrySet()) {
                             String paramName = entry.getKey();
                             String defaultValue = entry.getValue();
 
                             //check, if parameter already exists in required parameters
-                            if (!route.hasParameter(paramName)) {
+                            if (!method.hasParameter(paramName)) {
                                 //add parameter
                                 logger.info("add parameter with default name: {}", paramName);
 
                                 //NOTE: paramaters with default values are never required parameter (specified by specification)
-                                route.addParameter(paramName, Parameter.IN_TYPE.PATH, false, "string", defaultValue);
+                                method.addParameter(paramName, Parameter.IN_TYPE.PATH, false, "string", defaultValue);
                             }
                         }
 
