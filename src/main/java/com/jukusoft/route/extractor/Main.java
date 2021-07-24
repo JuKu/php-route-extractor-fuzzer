@@ -38,10 +38,11 @@ public class Main {
             //parse CLI arguments
             Map<String,String> params = CLIArgumentsParser.parseArguments(args);
 
-            List<Route> routes = SourceCodeParser.parseSourceCodeDir(new File(params.get("src")));
+            List<Route> routes = new ArrayList<>();//SourceCodeParser.parseSourceCodeDir(new File(params.get("src")));
 
             //list with parsers
             List<Parser> parsers = new ArrayList<>();
+            parsers.add(new SourceCodeParser());
             parsers.add(new SymfonyJSONParser());
 
             //call all parsers, if activated

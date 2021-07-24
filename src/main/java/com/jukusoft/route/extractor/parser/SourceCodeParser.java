@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 /**
  * utility class to parse source code
  */
-public class SourceCodeParser {
+public class SourceCodeParser implements Parser {
 
     //see also: https://stackoverflow.com/questions/18864509/how-to-java-regex-to-match-everything-but-specified-pattern
     // ^ means "except" (in braces)
@@ -32,7 +32,7 @@ public class SourceCodeParser {
     /**
      * private constructor, because this class is a utility class
      */
-    private SourceCodeParser() {
+    public SourceCodeParser() {
         //
     }
 
@@ -214,6 +214,20 @@ public class SourceCodeParser {
         }
 
         return routes;
+    }
+
+    @Override
+    public String getParameter() {
+        return "src";
+    }
+
+    @Override
+    public List<Route> parse(File srcFile, List<Route> routes) throws IOException {
+        if (!routes.isEmpty()) {
+            throw new IllegalStateException("this parser has to be the first one in the pipeline");
+        }
+
+        return SourceCodeParser.parseSourceCodeDir(srcFile);
     }
 
 }

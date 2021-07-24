@@ -37,4 +37,17 @@ public class Route {
         return name;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Route)) return false;
+        Route route = (Route) o;
+        return Objects.equals(url, route.url) && Objects.equals(name, route.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(url, name);
+    }
+    
 }
