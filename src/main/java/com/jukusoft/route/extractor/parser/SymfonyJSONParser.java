@@ -63,7 +63,6 @@ public class SymfonyJSONParser implements Parser {
                 routes.add(route);
             }
 
-            //TODO: if any, create multiple routes
             String method = routeJSON.getString("method");
             method = method.replace("ANY", "GET|POST|PUT|DELETE");
 
