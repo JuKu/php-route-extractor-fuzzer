@@ -1,9 +1,8 @@
 package com.jukusoft.neo4j.openapi.importer.client;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.condition.EnabledIf;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 import java.util.List;
 
@@ -11,13 +10,17 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class Neo4JClientTest {
 
+    @EnabledIfSystemProperty(named = "neo4jtests", matches = "true", disabledReason = "Works only with Neo4J Server")
     @Test
+    @Tag("neo4j")
     public void testConstructor() {
         Neo4JClient client = new Neo4JClient("bolt://192.168.2.39:7687", "neo4j", "admin");
         client.close();
     }
 
+    @EnabledIfSystemProperty(named = "neo4jtests", matches = "true", disabledReason = "Works only with Neo4J Server")
     @Test
+    @Tag("neo4j")
     public void testListDatabases() {
         Neo4JClient client = createClient();
         List<Database> databases = client.listDatabases();
@@ -27,7 +30,9 @@ public class Neo4JClientTest {
         assertTrue(databases.stream().anyMatch(db -> db.getName().equals("moleweb")));
     }
 
+    @EnabledIfSystemProperty(named = "neo4jtests", matches = "true", disabledReason = "Works only with Neo4J Server")
     @Test
+    @Tag("neo4j")
     public void testCreateAndDeleteNode() {
         Neo4JClient client = createClient();
         long oldNodeCount = client.countNodes("junit");
@@ -70,16 +75,36 @@ public class Neo4JClientTest {
         client.deleteNode(node);
     }
 
+    @EnabledIfSystemProperty(named = "neo4jtests", matches = "true", disabledReason = "Works only with Neo4J Server")
+    @Tag("neo4j")
     @BeforeAll
     public static void beforeAll() {
-        Neo4JClient client = createClient();
-        client.deleteNodes("junit");
+        if (System.getProperty("neo4jtests") == null) {
+            return;
+        }
+
+        try {
+            Neo4JClient client = createClient();
+            client.deleteNodes("junit");
+        } catch (Exception e) {
+            System.err.println("Neo4J Server is not accessable");
+        }
     }
 
+    @EnabledIfSystemProperty(named = "neo4jtests", matches = "true", disabledReason = "Works only with Neo4J Server")
+    @Tag("neo4j")
     @AfterAll
     public static void afterAll() {
-        Neo4JClient client = createClient();
-        client.deleteNodes("junit");
+        if (System.getProperty("neo4jtests") == null) {
+            return;
+        }
+
+        try {
+            Neo4JClient client = createClient();
+            client.deleteNodes("junit");
+        } catch (Exception e) {
+            System.err.println("Neo4J Server is not accessable");
+        }
     }
 
     private static Neo4JClient createClient() {
