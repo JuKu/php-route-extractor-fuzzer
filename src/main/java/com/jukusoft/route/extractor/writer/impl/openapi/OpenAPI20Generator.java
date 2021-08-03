@@ -75,6 +75,13 @@ public class OpenAPI20Generator implements FileFormatGenerator {
         producesArray.put("application/xml");
         json.put("produces", producesArray);
 
+        //info-tag
+        JSONObject infoJSON = new JSONObject();
+        infoJSON.put("title", "auto-generated swagger specification");
+        infoJSON.put("description", "auto-generated swagger specification");
+        infoJSON.put("version", "1.0.0");
+        json.put("info", infoJSON);
+
         Map<String,List<Route>> pathMap = convertToPathMap(routes);
 
         JSONObject paths = new JSONObject();
