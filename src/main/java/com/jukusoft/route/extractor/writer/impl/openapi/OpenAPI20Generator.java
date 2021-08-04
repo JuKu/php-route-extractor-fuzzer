@@ -89,6 +89,7 @@ public class OpenAPI20Generator implements FileFormatGenerator {
         for (Map.Entry<String,List<Route>> entry : pathMap.entrySet()) {
             JSONObject methodJSON = new JSONObject();
 
+            //iterate through all available routes (URLs)
             for (Route route : entry.getValue()) {
                 for (Map.Entry<Route.METHOD, RouteMethod> methodEntry : route.getMethods().entrySet()) {
                     Route.METHOD method = methodEntry.getKey();
@@ -139,6 +140,12 @@ public class OpenAPI20Generator implements FileFormatGenerator {
         return json;
     }
 
+    /**
+     * merges different route-methods with the same URL to a map like URL - route-list.
+     *
+     * @param routes all available routes for a specific site
+     * @return map "URL - route-list" for mapping URLs to routes with different methods
+     */
     private Map<String,List<Route>> convertToPathMap(List<Route> routes) {
         Map<String,List<Route>> pathMap = new HashMap<>();
 
