@@ -87,7 +87,7 @@ public class SymfonyJSONParser implements Parser {
                     for (String defaultParamKey : routeJSON.getJSONObject("defaults").keySet()) {
                         String defaultValue = routeJSON.getJSONObject("defaults").getString(defaultParamKey);
                         routeMethod.addDefaultValue(defaultParamKey, defaultValue);
-                        routeMethod.addParameter(defaultParamKey, Parameter.IN_TYPE.FORM, false, "string", defaultValue);
+                        routeMethod.addParameter(defaultParamKey, Parameter.IN_TYPE.QUERY, false, "string", defaultValue);
                     }
                 } catch (JSONException e) {
                     //don't do anything here, because this is expected, if no default paramaters are set
@@ -100,7 +100,7 @@ public class SymfonyJSONParser implements Parser {
                         String value = routeJSON.getJSONObject("requirements").getString(requiredParam);
 
                         //check, if it is a path or a query / form parameter
-                        Parameter.IN_TYPE paramType = url.contains("{" + requiredParam + "}") ? Parameter.IN_TYPE.PATH : Parameter.IN_TYPE.FORM;
+                        Parameter.IN_TYPE paramType = url.contains("{" + requiredParam + "}") ? Parameter.IN_TYPE.PATH : Parameter.IN_TYPE.QUERY;
 
                         LOGGER.debug("add route required parameter: {}, url: {}", requiredParam, url);
                         String varType = routeJSON.getJSONObject("requirements").getString(requiredParam).toLowerCase().equals("\\\\d+") ? "integer" : "string";

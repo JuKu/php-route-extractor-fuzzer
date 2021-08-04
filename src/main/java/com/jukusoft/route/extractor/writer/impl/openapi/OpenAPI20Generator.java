@@ -136,14 +136,22 @@ public class OpenAPI20Generator implements FileFormatGenerator {
                     Route.METHOD method = methodEntry.getKey();
                     RouteMethod routeMethod = methodEntry.getValue();
 
-                    JSONObject path = new JSONObject();
+                    JSONObject pathMethod = new JSONObject();
 
-                    path.put("summary", route.getName());
-                    path.put("description", route.getName());
+                    pathMethod.put("summary", route.getName());
+                    pathMethod.put("description", route.getName());
+                    pathMethod.put("operationId", route.getName());
 
                     JSONArray producesArr = new JSONArray();
                     producesArr.put(routeMethod.getProduces());
-                    path.put("produces", producesArr);
+                    pathMethod.put("produces", producesArr);
+
+                    //add default responses
+                    JSONObject respJSON = new JSONObject();
+                    JSONObject resp200JSON = new JSONObject();
+                    resp200JSON.put("description", "Success");
+                    respJSON.put("200", resp200JSON);
+                    pathMethod.put("responses", respJSON);
 
                     if (!routeMethod.getParameters().isEmpty()) {
                         JSONArray parametersArray = new JSONArray();
@@ -170,10 +178,10 @@ public class OpenAPI20Generator implements FileFormatGenerator {
                             parametersArray.put(param1);
                         }
 
-                        path.put("parameters", parametersArray);
+                        pathMethod.put("parameters", parametersArray);
                     }
 
-                    methodsJSON.put(routeMethod.getMethod().toString().toLowerCase(Locale.ROOT), path);
+                    methodsJSON.put(routeMethod.getMethod().toString().toLowerCase(Locale.ROOT), pathMethod);
                 }
 
                 //add url parameters, if neccessary
