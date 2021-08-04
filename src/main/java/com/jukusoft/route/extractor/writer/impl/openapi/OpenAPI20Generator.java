@@ -4,8 +4,12 @@ import com.jukusoft.route.extractor.parser.Parameter;
 import com.jukusoft.route.extractor.parser.Route;
 import com.jukusoft.route.extractor.parser.RouteMethod;
 import com.jukusoft.route.extractor.writer.FileFormatGenerator;
+import io.swagger.parser.OpenAPIParser;
+import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,6 +21,11 @@ import java.util.*;
  * this class is responsible for generating OpenAPI specification files (swagger json)
  */
 public class OpenAPI20Generator implements FileFormatGenerator {
+
+    /**
+     * the logger.
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(OpenAPI20Generator.class);
 
     private final Path outputDir;
 
@@ -49,8 +58,25 @@ public class OpenAPI20Generator implements FileFormatGenerator {
         int spacesToIndentEachLevel = 2;
         String content = generateJSON(routes, host, basePath).toString(spacesToIndentEachLevel);
 
+        LOGGER.info("write swagger specification: {}", file.getAbsolutePath());
         byte[] strToBytes = content.getBytes();
         Files.write(file.toPath(), strToBytes);
+
+        //validate generated swagger file, see also: https://github.com/swagger-api/swagger-parser
+        LOGGER.info("validate swagger file...");
+        SwaggerParseResult result = new OpenAPIParser().readContents(file.toString(), null, null);
+
+        //check for validation errors and warnings
+        if (result.getMessages() != null) {
+            LOGGER.error("Validation error or warnings occured: ");
+            result.getMessages().forEach(LOGGER::error);
+        } else {
+            LOGGER.info("Swagger validation succeeded");
+        }
+
+        if (result.getOpenAPI() == null) {
+            LOGGER.error("Validation of Swagger / OpenAPI file failed");
+        }
     }
 
     @Override
