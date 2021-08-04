@@ -63,9 +63,19 @@ public class OpenAPI20Generator implements FileFormatGenerator {
         return "result.json";
     }
 
+    /**
+     * generate JSON for OpenAPI Spec Version 2.0 .
+     *
+     * @param routes all available routes
+     * @param host the server host
+     * @param basePath base path
+     *
+     * @return OpenAPI 2.0 spec as JSON Object
+     */
     private JSONObject generateJSON(List<Route> routes, String host, String basePath) {
         JSONObject json = new JSONObject();
 
+        //add general information on top layer
         json.put("swagger", "2.0");
         json.put("basePath", basePath);
         json.put("host", host);
@@ -86,18 +96,22 @@ public class OpenAPI20Generator implements FileFormatGenerator {
 
         JSONObject paths = new JSONObject();
 
+        // "paths" object
         for (Map.Entry<String,List<Route>> entry : pathMap.entrySet()) {
-            JSONObject methodJSON = new JSONObject();
+            JSONObject methodsJSON = new JSONObject();
+
+            String url = entry.getKey();
+            List<Route> methodsForRoute = entry.getValue();
 
             //iterate through all available routes (URLs)
-            for (Route route : entry.getValue()) {
+            for (Route route : methodsForRoute) {
+                //note: every url can have multiple route-objects, if there are more than one HTTP methods for this route
                 for (Map.Entry<Route.METHOD, RouteMethod> methodEntry : route.getMethods().entrySet()) {
                     Route.METHOD method = methodEntry.getKey();
                     RouteMethod routeMethod = methodEntry.getValue();
 
                     JSONObject path = new JSONObject();
 
-                    //TODO: add code here
                     path.put("summary", route.getName());
                     path.put("description", route.getName());
 
@@ -109,6 +123,11 @@ public class OpenAPI20Generator implements FileFormatGenerator {
                         JSONArray parametersArray = new JSONArray();
 
                         for (Parameter param : routeMethod.getParameters()) {
+                            if (param.getIn().equals("path")) {
+                                //we already add path-variables in another section
+                                continue;
+                            }
+
                             JSONObject param1 = new JSONObject();
 
                             param1.put("name", param.getName());
@@ -128,11 +147,52 @@ public class OpenAPI20Generator implements FileFormatGenerator {
                         path.put("parameters", parametersArray);
                     }
 
-                    methodJSON.put(routeMethod.getMethod().toString().toLowerCase(Locale.ROOT), path);
+                    methodsJSON.put(routeMethod.getMethod().toString().toLowerCase(Locale.ROOT), path);
+                }
+
+                //add url parameters, if neccessary
+                if (url.contains("{") && url.contains("}")) {
+                    //url contains path variables
+                    JSONArray parametersJSON = new JSONArray();
+
+                    //get the first route-method and extract the path variables
+                    List<Parameter> parameters = methodsForRoute.stream()
+                            .findFirst()//find first route obkect
+                            .map(route1 -> route1.getMethods())//map to list with route-methods
+                            .filter(map -> !map.isEmpty())//verify, that route has minimum one HTTP method (this is a MUST-HAVE requirement)
+                            .map(map -> map.values().stream().findFirst())//map to first route-method (all methods contains the same path parameters, so we only need the first one
+                            .map(opt -> opt.get())//remove the optional
+                            .map(routeMethod -> routeMethod.getParameters())//map to route methods
+                            .get();
+
+                    //iterate through all parameters for a specific url, filter the path parameters and add them to JSON
+                    for (Parameter parameter : parameters) {
+                        //only add path-variables
+                        if (parameter.getIn().equals("path")) {
+                            JSONObject parameterJSON = new JSONObject();
+
+                            parameterJSON.put("name", parameter.getName());
+                            parameterJSON.put("in", parameter.getIn());
+                            parameterJSON.put("required", parameter.getRequired());
+                            parameterJSON.put("type", parameter.getType());
+                            parameterJSON.put("description", parameter.getName());
+                            parameterJSON.put("operationId", parameter.getName());
+
+                            if (!parameter.getDefaultStr().isEmpty()) {
+                                parameterJSON.put("default", parameter.getDefaultStr());
+                            }
+
+                            parametersJSON.put(parameterJSON);
+                        }
+                    }
+
+                    //add path parameters to json
+                    methodsJSON.put("parameters", parametersJSON);
                 }
             }
 
-            paths.put(entry.getKey(), methodJSON);
+            //add the route-methods to the URL
+            paths.put(entry.getKey(), methodsJSON);
         }
 
         json.put("paths", paths);
